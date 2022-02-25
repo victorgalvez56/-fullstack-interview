@@ -26,6 +26,7 @@ import {
   BoardInterface,
   BoardObjectInterface,
   BoardObjectInterfaceInterface,
+  DictionaryInterface,
   PointsInterface,
 } from './src/_helpers';
 import {Utils} from './src/_helpers';
@@ -35,22 +36,38 @@ const App = () => {
       ? (require('./files/test-board-1.json') as BoardInterface)
       : (require('./files/test-board-2.json') as BoardInterface),
   );
+  const [dictionary] = useState<DictionaryInterface>(
+    require('./files/dictionary.json') as DictionaryInterface,
+  );
   const [board] = useState(listBoard.board);
   const [matrixBoard, setMatrixBoard] = useState([]);
-  const [word, setWord] = useState<BoardObjectInterfaceInterface[]>([]);
+  const [word, setWord] = useState<any[]>([]);
+  const [wordIsCorrect, setWordIsCorrect] = useState(false);
 
   useEffect(() => {
     const boardReduce = board.reduce(
       (acc: BoardObjectInterface[], current: string, index: number) => {
-        acc[index] = {board: current, selected: false};
+        acc[index] = {board: current, selected: false, id: index};
         return acc;
       },
       [],
     );
     setWord(res => []);
-    listToMatrix(boardReduce, 4);
+    Utils.listToMatrix(boardReduce, 4).then((matrix: any) =>
+      setMatrixBoard(matrix),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    let element = '';
+    for (let index = 0; index < word.length; index++) {
+      element = element + '' + word[index].letter;
+    }
+    const findWord = dictionary.words.find(
+      wordDict => wordDict === element.toLowerCase(),
+    );
+    findWord !== undefined ? setWordIsCorrect(true) : setWordIsCorrect(false);
+  }, [dictionary.words, word]);
   const handleCheck = (indexX: number, indexY: number) => {
     setMatrixBoard((prevState: any) =>
       prevState.map((row: any, iX: any) =>
@@ -63,6 +80,7 @@ const App = () => {
         ),
       ),
     );
+    // dictionary.words.find(words=>)
   };
   const isAdjacency = (indexX: number, indexY: number) => {
     let result = true;
@@ -81,20 +99,7 @@ const App = () => {
     );
     return result;
   };
-  const listToMatrix = (list: any, elementsPerSubArray = 4) => {
-    var matrix: any = [],
-      i,
-      k;
-    for (i = 0, k = -1; i < list.length; i++) {
-      if (i % elementsPerSubArray === 0) {
-        k++;
-        matrix[k] = [];
-      }
-      matrix[k].push(list[i]);
-    }
-    setMatrixBoard(matrix);
-    return matrix;
-  };
+
   const handleClearWord = () => {
     setMatrixBoard((prevState: any) =>
       prevState.map((row: any) =>
@@ -105,9 +110,23 @@ const App = () => {
     );
     setWord(res => []);
   };
-
   const pushLetterInWord = (objectBoard: any) => {
-    setWord(result => [...result, objectBoard.board]);
+    let idCount = 1;
+    setWord(result => [
+      ...result,
+      {
+        id: idCount,
+        letter: objectBoard.board,
+      },
+    ]);
+    idCount++;
+
+    // let element = '';
+    // for (let index = 0; index < word.length; index++) {
+    //   element = element + '' + word[index].letter;
+    // }
+    // const findWord = dictionary.words.find(wordDict => console.warn(element));
+    // console.warn(findWord);
     return objectBoard;
   };
 
@@ -120,27 +139,42 @@ const App = () => {
         </View>
         <View style={styles.container}>
           <View style={styles.row}>
-            {matrixBoard.map((sub: any, indexX: any) =>
-              sub.map((_board: any, indexY: any) => (
-                <TouchableOpacity
-                  style={
-                    _board.selected
-                      ? styles.selectedButton
-                      : styles.noSelectedButton
-                  }
-                  onPress={() => handleCheck(indexX, indexY)}>
-                  <Text style={styles.boardText}>{_board.board}</Text>
-                </TouchableOpacity>
-              )),
+            {matrixBoard.map(
+              (sub: BoardObjectInterfaceInterface[], indexX: number) =>
+                sub.map(
+                  (_board: BoardObjectInterfaceInterface, indexY: number) => (
+                    <TouchableOpacity
+                      key={_board.id}
+                      style={
+                        _board.selected
+                          ? styles.selectedButton
+                          : styles.noSelectedButton
+                      }
+                      onPress={() => handleCheck(indexX, indexY)}>
+                      <Text key={_board.id} style={styles.boardText}>
+                        {_board.board}
+                      </Text>
+                    </TouchableOpacity>
+                  ),
+                ),
             )}
           </View>
           <View style={styles.containerInput}>
-            <Text style={styles.baseText}>
-              {word.map((_word: any) => (
-                <Text>{_word}</Text>
-              ))}
-              {/* <Text>     Correcto</Text> */}
-            </Text>
+            {wordIsCorrect ? (
+              <Text style={styles.validText}>
+                {word.map((_word: any) => (
+                  <Text key={_word.id}>{_word.letter}</Text>
+                ))}
+                {word.length ? <Text>{'                   Valid'}</Text> : ''}
+              </Text>
+            ) : (
+              <Text style={styles.invalidText}>
+                {word.map((_word: any) => (
+                  <Text key={_word.id}>{_word.letter}</Text>
+                ))}
+                {word.length ? <Text>{'                   Invalid'}</Text> : ''}
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -155,8 +189,13 @@ const styles = StyleSheet.create({
     height: 200,
     padding: 20,
   },
-  baseText: {
+  invalidText: {
     fontWeight: 'bold',
+    color: '#A83133',
+  },
+  validText: {
+    fontWeight: 'bold',
+    color: '#A1D65B',
   },
   innerText: {
     color: 'red',
