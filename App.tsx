@@ -134,7 +134,7 @@ const App = () => {
       <StatusBar />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View style={styles.desf}>
-          <Text style={styles.desfText}>Desafío de Victor Galvez</Text>
+          <Text style={styles.desfText}>Fullstack Interview - Victor Galvez</Text>
         </View>
         <View style={styles.title}>
           <Button title="Clear Word (X)" onPress={() => handleClearWord()} />
