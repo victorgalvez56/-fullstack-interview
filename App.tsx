@@ -52,30 +52,47 @@ const App = () => {
     setMatrixBoard((prevState: any) =>
       prevState.map((row: any, iX: any) =>
         row.map((col: any, iY: any) =>
-          iX === indexX && iY === indexY ? {...col, selected: true} : col,
+          isAdjacency(indexX, indexY)
+            ? iX === indexX && iY === indexY
+              ? {...col, selected: true}
+              : col
+            : col,
         ),
       ),
     );
   };
 
   const isAdjacency = (indexX: number, indexY: number) => {
-    nCoordinates(indexX, indexY, adjacencyOffsets).then(
-      (result: PointsInterface[]) => {
-        setMatrixBoard((prevState: any) =>
-          prevState.map((row: any, iX: any) =>
-            row.map(
-              (col: any, iY: any) =>
-                col.selected
-                  ? result.find(
-                      resultAd => resultAd.x === iX && resultAd.y === iY,
-                    )
-                  : console.log('raa'),
-              // col.selected ? {...col, selected: true} : col,
-            ),
-          ),
-        );
-      },
+    let result = true;
+    const matrixAux = matrixBoard;
+    console.warn(matrixAux);
+    matrixAux.map((row: any, iX: any) =>
+      row.map((col: any, iY: any) =>
+        col.selected
+          ? nCoordinates(iX, iY, adjacencyOffsets).find(
+              (coords: PointsInterface) =>
+                coords.x === indexX && coords.y === indexY,
+            )
+            ? (result = true)
+            : (result = false)
+          : '',
+      ),
     );
+
+    // for (let iX = 0; iX < matrixAux.length; iX++) {
+    //   for (let iY = 0; iY < matrixAux[iX].length; iY++) {
+    //     console.warn
+    //     if (matrixAux[iX][iY].selected) {
+    //       console.warn(
+    //         nCoordinates(iX, iY, adjacencyOffsets).find(
+    //           (coords: PointsInterface) =>
+    //             coords.x === indexX && coords.y === indexY,
+    //         ),
+    //       );
+    //     }
+    //   }
+    // }
+    return result;
   };
   const listToMatrix = (list: any, elementsPerSubArray = 4) => {
     var matrix: any = [],
@@ -107,8 +124,6 @@ const App = () => {
     return adjacencyOffsets.map(({x, y}: any) => ({x: x + x0, y: y + y0}));
   };
   let adjacencyOffsets = manhattanAdjacencyOffsets(1);
-  let neighbours = nCoordinates(1, 1, adjacencyOffsets);
-  console.warn(neighbours);
   return (
     <SafeAreaView>
       <StatusBar />

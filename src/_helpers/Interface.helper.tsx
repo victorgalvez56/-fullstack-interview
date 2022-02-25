@@ -3,7 +3,7 @@ export interface BoardInterface {
 }
 export interface BoardObjectInterfaceInterface {
   board: string;
-  selected: boolean;
+  selected?: boolean;
 }
 export interface PointsInterface {
   x: number;
