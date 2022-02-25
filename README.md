@@ -44,6 +44,6 @@ _Resolved points._
   
 
 ### Example
-![Mobile dimensions.](./files/1.png)
+![Mobile dimensions.](./files/2.png)
 ![Mobile dimensions.](./files/3.png)
 ![Mobile dimensions.](./files/4.png)
