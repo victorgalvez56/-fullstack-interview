@@ -17,6 +17,7 @@ import {
   Button,
   TouchableOpacity,
   View,
+  TextInput,
   StyleSheet,
 } from 'react-native';
 
@@ -24,9 +25,10 @@ import {Header} from 'react-native/Libraries/NewAppScreen';
 import {
   BoardInterface,
   BoardObjectInterface,
+  BoardObjectInterfaceInterface,
   PointsInterface,
 } from './src/_helpers';
-
+import {Utils} from './src/_helpers';
 const App = () => {
   const [listBoard] = useState<BoardInterface>(
     Math.floor(Math.random() * (3 - 1) + 1) === 1
@@ -35,6 +37,7 @@ const App = () => {
   );
   const [board] = useState(listBoard.board);
   const [matrixBoard, setMatrixBoard] = useState([]);
+  const [word, setWord] = useState<BoardObjectInterfaceInterface[]>([]);
 
   useEffect(() => {
     const boardReduce = board.reduce(
@@ -44,32 +47,30 @@ const App = () => {
       },
       [],
     );
+    setWord(res => []);
     listToMatrix(boardReduce, 4);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const handleCheck = (indexX: number, indexY: number) => {
     setMatrixBoard((prevState: any) =>
       prevState.map((row: any, iX: any) =>
         row.map((col: any, iY: any) =>
           isAdjacency(indexX, indexY)
             ? iX === indexX && iY === indexY
-              ? {...col, selected: true}
+              ? pushLetterInWord({...col, selected: true})
               : col
             : col,
         ),
       ),
     );
   };
-
   const isAdjacency = (indexX: number, indexY: number) => {
     let result = true;
     const matrixAux = matrixBoard;
-    console.warn(matrixAux);
     matrixAux.map((row: any, iX: any) =>
       row.map((col: any, iY: any) =>
         col.selected
-          ? nCoordinates(iX, iY, adjacencyOffsets).find(
+          ? Utils.nCoordinates(iX, iY).find(
               (coords: PointsInterface) =>
                 coords.x === indexX && coords.y === indexY,
             )
@@ -78,20 +79,6 @@ const App = () => {
           : '',
       ),
     );
-
-    // for (let iX = 0; iX < matrixAux.length; iX++) {
-    //   for (let iY = 0; iY < matrixAux[iX].length; iY++) {
-    //     console.warn
-    //     if (matrixAux[iX][iY].selected) {
-    //       console.warn(
-    //         nCoordinates(iX, iY, adjacencyOffsets).find(
-    //           (coords: PointsInterface) =>
-    //             coords.x === indexX && coords.y === indexY,
-    //         ),
-    //       );
-    //     }
-    //   }
-    // }
     return result;
   };
   const listToMatrix = (list: any, elementsPerSubArray = 4) => {
@@ -108,29 +95,30 @@ const App = () => {
     setMatrixBoard(matrix);
     return matrix;
   };
-
-  let manhattanAdjacencyOffsets = (dist: number) => {
-    let ret = [];
-    for (let x = -dist; x <= dist; x++) {
-      for (let y = -dist; y <= dist; y++) {
-        if (x === 0 && y === 0) continue; // Don't include the 0,0 point
-        ret.push({x, y});
-      }
-    }
-    return ret;
+  const handleClearWord = () => {
+    setMatrixBoard((prevState: any) =>
+      prevState.map((row: any) =>
+        row.map((col: any) =>
+          col.selected ? {...col, selected: false} : {...col, selected: false},
+        ),
+      ),
+    );
+    setWord(res => []);
   };
 
-  let nCoordinates = (x0: number, y0: number, adjacencyOffsets: any) => {
-    return adjacencyOffsets.map(({x, y}: any) => ({x: x + x0, y: y + y0}));
+  const pushLetterInWord = (objectBoard: any) => {
+    setWord(result => [...result, objectBoard.board]);
+    return objectBoard;
   };
-  let adjacencyOffsets = manhattanAdjacencyOffsets(1);
+
   return (
     <SafeAreaView>
       <StatusBar />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Header />
-
-        <View style={{padding: 5, flex: 1}}>
+        <View style={styles.title}>
+          <Button title="Clear Word (X)" onPress={() => handleClearWord()} />
+        </View>
+        <View style={styles.container}>
           <View style={styles.row}>
             {matrixBoard.map((sub: any, indexX: any) =>
               sub.map((_board: any, indexY: any) => (
@@ -146,18 +134,60 @@ const App = () => {
               )),
             )}
           </View>
+          <View style={styles.containerInput}>
+            <Text style={styles.baseText}>
+              {word.map((_word: any) => (
+                <Text>{_word}</Text>
+              ))}
+              {/* <Text>     Correcto</Text> */}
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({
+  title: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: 200,
+    padding: 20,
+  },
+  baseText: {
+    fontWeight: 'bold',
+  },
+  innerText: {
+    color: 'red',
+  },
+  containerInput: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    marginTop: 50,
+    width: '100%',
+    borderWidth: 4,
+    borderColor: '#A8A8A8',
+  },
+  input: {
+    height: 40,
+    width: 100,
+    textAlign: 'center',
+    letterSpacing: 9,
+    fontSize: 20,
+    color: '#A1D65B',
+    fontWeight: 'bold',
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  },
   container: {
     flex: 1,
     marginTop: 8,
-    backgroundColor: 'aliceblue',
+    padding: 20,
   },
-
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -172,7 +202,7 @@ const styles = StyleSheet.create({
   },
   selectedButton: {
     width: '25%',
-    backgroundColor: 'green',
+    backgroundColor: '#7AAE50',
     padding: 10,
     borderRadius: 5,
     borderWidth: 2,
@@ -181,6 +211,8 @@ const styles = StyleSheet.create({
   boardText: {
     color: '#fff',
     textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 20,
     paddingLeft: 10,
     paddingRight: 10,
   },
