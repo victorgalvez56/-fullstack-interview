@@ -70,8 +70,8 @@ const App = () => {
   }, [dictionary.words, word]);
   const handleCheck = (indexX: number, indexY: number) => {
     setMatrixBoard((prevState: any) =>
-      prevState.map((row: any, iX: any) =>
-        row.map((col: any, iY: any) =>
+      prevState.map((row: BoardObjectInterface[], iX: number) =>
+        row.map((col: BoardObjectInterface, iY: number) =>
           isAdjacency(indexX, indexY)
             ? iX === indexX && iY === indexY
               ? pushLetterInWord({...col, selected: true})
@@ -99,7 +99,6 @@ const App = () => {
     );
     return result;
   };
-
   const handleClearWord = () => {
     setMatrixBoard((prevState: any) =>
       prevState.map((row: any) =>
@@ -110,7 +109,7 @@ const App = () => {
     );
     setWord(res => []);
   };
-  const pushLetterInWord = (objectBoard: any) => {
+  const pushLetterInWord = (objectBoard: BoardObjectInterface) => {
     let idCount = 1;
     setWord(result => [
       ...result,
@@ -134,6 +133,9 @@ const App = () => {
     <SafeAreaView>
       <StatusBar />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
+        <View style={styles.desf}>
+          <Text style={styles.desfText}>Desafío de Victor Galvez</Text>
+        </View>
         <View style={styles.title}>
           <Button title="Clear Word (X)" onPress={() => handleClearWord()} />
         </View>
@@ -182,6 +184,17 @@ const App = () => {
   );
 };
 const styles = StyleSheet.create({
+  desf: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    height: 100,
+    padding: 20,
+  },
+  desfText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   title: {
     display: 'flex',
     justifyContent: 'center',
