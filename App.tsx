@@ -120,12 +120,6 @@ const App = () => {
     ]);
     idCount++;
 
-    // let element = '';
-    // for (let index = 0; index < word.length; index++) {
-    //   element = element + '' + word[index].letter;
-    // }
-    // const findWord = dictionary.words.find(wordDict => console.warn(element));
-    // console.warn(findWord);
     return objectBoard;
   };
 
